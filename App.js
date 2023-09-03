@@ -1,12 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
+// import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 import * as Font from 'expo-font';
 
-// Import the screens
+// Import Application Components
 import Start from './components/Start';
 import Chat from './components/Chat';
+
+// Firestore Functions
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
 // import react Navigation
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,9 +20,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+	// *************************************************************
+	// ********************** F O N T S ****************************
+
 	// Setup State variable to check when the Custom Font is loaded
 	const [fontLoaded, setFontLoaded] = useState(false);
-
 	// Load the Custom Font
 	useEffect(() => {
 		const loadFont = async () => {
@@ -27,7 +33,6 @@ const App = () => {
 			});
 			setFontLoaded(true);
 		};
-
 		loadFont();
 	}, []);
 
@@ -42,6 +47,26 @@ const App = () => {
 			</View>
 		);
 	}
+	// *********************************************************************
+	// ********************** F I R E S T O R E ****************************
+
+	// Firestore Params
+	const firebaseConfig = {
+		apiKey: 'AIzaSyDGux5lSBHOaosPhEQ-gYj3Jyesu-1XIv4',
+		authDomain: 'chat-app-c1636.firebaseapp.com',
+		projectId: 'chat-app-c1636',
+		storageBucket: 'chat-app-c1636.appspot.com',
+		messagingSenderId: '782177217087',
+		appId: '1:782177217087:web:c99c72cda97eaa7781e68a',
+	};
+	// Initialize Firebase
+	const app = initializeApp(firebaseConfig);
+
+	// Initialize Cloud Firestore and get a reference to the service
+	const db = getFirestore(app);
+
+	// ***************************************************************
+	// ********************** R E N D E R ****************************
 
 	return (
 		<NavigationContainer>
@@ -50,10 +75,14 @@ const App = () => {
 					name='Start'
 					component={Start}
 				/>
-				<Stack.Screen
-					name='Chat'
-					component={Chat}
-				/>
+				<Stack.Screen name='Chat'>
+					{(props) => (
+						<Chat
+							db={db}
+							{...props}
+						/>
+					)}
+				</Stack.Screen>
 			</Stack.Navigator>
 		</NavigationContainer>
 	);

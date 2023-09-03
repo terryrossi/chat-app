@@ -1,34 +1,52 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+	StyleSheet,
+	View,
+	Text,
+	KeyboardAvoidingView,
+	Platform,
+	Alert,
+	TouchableOpacity,
+	TextInput,
+	FlatList,
+} from 'react-native';
+
+// Import Gifted Chat Components
 import { Bubble, GiftedChat, Day } from 'react-native-gifted-chat';
 
-const Chat = ({ route, navigation }) => {
-	const { name, backgroundColor } = route.params;
+// Import Firebase/FireStore Components and functions
+import { collection, getDocs, addDoc, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+
+// *************************************************************
+
+const Chat = ({ db, route, navigation }) => {
+	const { userId, name, backgroundColor } = route.params; // Getting Parametres fro Start Component
+	// console.log(userId, name, backgroundColor);
+
+	// Messages Array
 	const [messages, setMessages] = useState([]);
+
+	// Access Firestore in Real Time (Websockets)
 
 	useEffect(() => {
 		navigation.setOptions({ title: name });
-	}, []);
+		const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
+		const unsubMessages = onSnapshot(q, (documentsSnapshot) => {
+			let newMessages = [];
+			documentsSnapshot.forEach((doc) => {
+				newMessages.push({
+					id: doc.id,
+					...doc.data(),
+					createdAt: new Date(doc.data().createdAt.toMillis()), // Transform Timestamp to handle date in the App
+				});
+			});
+			setMessages(newMessages);
+		});
 
-	useEffect(() => {
-		setMessages([
-			{
-				_id: 1,
-				text: 'You have entered the Chat!',
-				createdAt: new Date(),
-				system: true,
-			},
-			{
-				_id: 2,
-				text: `Hello ${name}`,
-				createdAt: new Date(),
-				user: {
-					_id: 2,
-					name: 'React Native',
-					avatar: 'https://placeimg.com/140/140/any',
-				},
-			},
-		]);
+		// Clean up code
+		return () => {
+			if (unsubMessages) unsubMessages();
+		};
 	}, []);
 
 	const renderDay = (props) => {
@@ -75,10 +93,13 @@ const Chat = ({ route, navigation }) => {
 		);
 	};
 
+	// Send new Messages to Firestore
 	const onSend = (newMessages) => {
-		setMessages((previousMessages) => GiftedChat.append(previousMessages, newMessages));
+		addDoc(collection(db, 'messages'), newMessages[0]);
 	};
 
+	// ****************************************************************
+	// ********************** R E N D E R ****************************
 	return (
 		<View style={[styles.container, { backgroundColor: backgroundColor }]}>
 			{/* <View> */}
@@ -88,7 +109,8 @@ const Chat = ({ route, navigation }) => {
 				// renderDay={renderDay}
 				onSend={(messages) => onSend(messages)}
 				user={{
-					_id: 1,
+					_id: userId,
+					name: name,
 				}}
 			/>
 			{Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
