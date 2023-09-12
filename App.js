@@ -1,5 +1,5 @@
 // import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Alert, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 import * as Font from 'expo-font';
@@ -10,7 +10,14 @@ import Chat from './components/Chat';
 
 // Firestore Functions
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, disableNetwork, enableNetwork } from 'firebase/firestore';
+
+// Prevent warning message: "AsyncStorage has been extracted from" to appear
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['AsyncStorage has been extracted from']);
+
+// Import NetInfo to check on status of network connection
+import { useNetInfo } from '@react-native-community/netinfo';
 
 // import react Navigation
 import { NavigationContainer } from '@react-navigation/native';
@@ -24,31 +31,44 @@ const App = () => {
 	// ********************** F O N T S ****************************
 
 	// Setup State variable to check when the Custom Font is loaded
-	const [fontLoaded, setFontLoaded] = useState(false);
+	// const [fontLoaded, setFontLoaded] = useState(false);
 	// Load the Custom Font
-	useEffect(() => {
-		const loadFont = async () => {
-			await Font.loadAsync({
-				'custom-font': require('./assets/Poppins/Poppins-Black.ttf'),
-			});
-			setFontLoaded(true);
-		};
-		loadFont();
-	}, []);
+	// useEffect(() => {
+	// 	const loadFont = async () => {
+	// 		await Font.loadAsync({
+	// 			'custom-font': require('./assets/Poppins/Poppins-Black.ttf'),
+	// 		});
+	// 		setFontLoaded(true);
+	// 	};
+	// 	loadFont();
+	// }, []);
 
 	// Show Loading indicator until Font is loaded
-	if (!fontLoaded) {
-		return (
-			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-				<ActivityIndicator
-					size='large'
-					color='blue'
-				/>
-			</View>
-		);
-	}
+	// if (!fontLoaded) {
+	// 	return (
+	// 		<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+	// 			<ActivityIndicator
+	// 				size='large'
+	// 				color='blue'
+	// 			/>
+	// 		</View>
+	// 	);
+	// }
 	// *********************************************************************
 	// ********************** F I R E S T O R E ****************************
+
+	// define a new state that represents the network connectivity status
+	const connectionStatus = useNetInfo();
+
+	// code that will display an alert popup if connection is lost
+	useEffect(() => {
+		if (connectionStatus.isConnected === false) {
+			Alert.alert('Connection lost!');
+			disableNetwork(db);
+		} else if (connectionStatus.isConnected === true) {
+			enableNetwork(db);
+		}
+	}, [connectionStatus.isConnected]);
 
 	// Firestore Params
 	const firebaseConfig = {
@@ -79,6 +99,7 @@ const App = () => {
 					{(props) => (
 						<Chat
 							db={db}
+							isConnected={connectionStatus.isConnected}
 							{...props}
 						/>
 					)}

@@ -124,10 +124,10 @@ const styles = StyleSheet.create({
 		shadowOffset: { width: 2, height: 2 },
 		shadowOpacity: 0.8,
 		shadowRadius: 5,
-		fontFamily: 'custom-font',
+		// fontFamily: 'custom-font',
 		color: '#FFFFFF',
 		fontSize: 45,
-		fontWeight: 600,
+		fontWeight: '800',
 	},
 
 	// Styles the container holding the input text box, color choice and Start Chatting button
