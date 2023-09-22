@@ -83,3 +83,71 @@ development.
 - “Choose background color”: font size 16, font weight 300, font color #757083, 100% opacity
 - Color options HEX codes: #090C08; #474056; #8A95A5; #B9C6AE
 - Start chatting button: font size 16, font weight 600, font color #FFFFFF, button color #757083
+
+## How to set up the application
+
+As this application requires react native and is developped with Expo, the first step involves downgrading (if necessary) to a node version compatible with Expo:
+
+- npm install 16.19.0
+- npm use 16.19.0
+- npm alias default 16.19.0
+
+Next, install expo CLI on your machine:
+
+- npm install -g expo-cli
+
+**Android Studio:** If you plan to run the app on an Android emulator, you'll need to set up Android Studio. Follow the official Expo guide for instructions on setting up the Android development environment: [Expo Android Development Environment](https://docs.expo.dev/workflow/android-studio-emulator/)
+
+Before running the app, make sure to install the required dependencies using npm or yarn:
+(Expo only supports Node up to version 16.19.0, please ensure you are using this version)
+
+npm install
+@react-native-async-storage/async-storage
+@react-native-community/netinfo
+@react-navigation/native
+@react-navigation/native-stack
+expo firebase
+react-native
+react-native-gifted-chat
+react-native-safe-area-context
+react-native-screens
+expo-image-picker
+expo-location
+react-native-maps
+
+This will install all the dependencies needed to run the app.
+
+## Database Configuration
+
+This app uses Firebase as the backend database. To configure Firebase:
+
+- Visit the [Firebase Console](https://console.firebase.google.com/) and create a new project if you don't have one already. In the "Rules" tab, change "allow read, write: if false;" to "allow read, write: if true;"
+
+- Set up Firebase Authentication (Anonymous Authentication is used in this app) and Firestore Database. Make sure to enable anonymous authentication in Firebase.
+
+- Obtain the Firebase configuration object for your project. It should look something like this:
+
+```javascript
+const firebaseConfig = {
+	apiKey: 'YOUR_API_KEY',
+	authDomain: 'YOUR_AUTH_DOMAIN',
+	projectId: 'YOUR_PROJECT_ID',
+	storageBucket: 'YOUR_STORAGE_BUCKET',
+	messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+	appId: 'YOUR_APP_ID',
+	measurementId: 'YOUR_MEASUREMENT_ID',
+};
+```
+
+In the App.js file of your project, replace the firebaseConfig object with your own Firebase configuration.
+
+## Running the App
+
+Now that you've set up the environment and Firebase, you can run the app:
+
+expo start or npm start
+
+This command will start the Expo development server, and you can run the app on an emulator or a physical device using the expo Go App
+
+(expo start -c to clear cache)
+(expo start --offline for offline testing)
