@@ -1,15 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-	StyleSheet,
-	View,
-	Text,
-	KeyboardAvoidingView,
-	Platform,
-	Alert,
-	TouchableOpacity,
-	TextInput,
-	FlatList,
-} from 'react-native';
+import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
 
 // Import Gifted Chat Components
 import { Bubble, GiftedChat, InputToolbar, Day } from 'react-native-gifted-chat';
@@ -17,13 +7,22 @@ import { Bubble, GiftedChat, InputToolbar, Day } from 'react-native-gifted-chat'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import Firebase/FireStore Components and functions
-import { collection, getDocs, addDoc, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+
+// additional actions component
+import CustomActions from './CustomActions';
+
+import MapView from 'react-native-maps';
 
 // *************************************************************
 
-const Chat = ({ db, route, navigation, isConnected }) => {
-	const { userId, name, backgroundColor } = route.params; // Getting Parametres fro Start Component
-	// console.log(userId, name, backgroundColor);
+const Chat = ({ db, storage, route, navigation, isConnected }) => {
+	const { userId, name, backgroundColor } = route.params;
+	// db = Firestore Database
+	// storage = Firestore Storage
+	// route = Parametres from Start Component
+	// navigation = Navigtion API from '@react-navigation/native';
+	// isConnected = Checks if there is an internet connection for offline use
 
 	// Messages Array
 	const [messages, setMessages] = useState([]);
@@ -88,6 +87,7 @@ const Chat = ({ db, route, navigation, isConnected }) => {
 		}
 	};
 
+	// Customized rendering of the date Color
 	const renderDay = (props) => {
 		return (
 			<Day
@@ -97,6 +97,7 @@ const Chat = ({ db, route, navigation, isConnected }) => {
 		);
 	};
 
+	// Customized rendering of the Bubbles Colors
 	const renderBubble = (props) => {
 		return (
 			<Bubble
@@ -132,12 +133,43 @@ const Chat = ({ db, route, navigation, isConnected }) => {
 		);
 	};
 
+	// Input Bar at the bottom
 	const renderInputToolbar = (props) => {
 		if (isConnected) return <InputToolbar {...props} />;
 		else return null;
 	};
 
-	// Send new Messages to Firestore
+	// Additional actions ("+" circle sign on the left of input field)
+	const renderCustomActions = (props) => {
+		return (
+			<CustomActions
+				storage={storage}
+				userId={userId}
+				{...props}
+			/>
+		);
+	};
+
+	// Renders a Map with the location using MapView Component
+	const renderCustomView = (props) => {
+		const { currentMessage } = props;
+		if (currentMessage.location) {
+			return (
+				<MapView
+					style={{ width: 150, height: 100, borderRadius: 13, margin: 3 }}
+					region={{
+						latitude: currentMessage.location.latitude,
+						longitude: currentMessage.location.longitude,
+						latitudeDelta: 0.0922,
+						longitudeDelta: 0.0421,
+					}}
+				/>
+			);
+		}
+		return null;
+	};
+
+	// Sends new Messages to Firestore for persistence in Firestore DB
 	const onSend = (newMessages) => {
 		addDoc(collection(db, 'messages'), newMessages[0]);
 	};
@@ -145,7 +177,7 @@ const Chat = ({ db, route, navigation, isConnected }) => {
 	// ****************************************************************
 	// ********************** R E N D E R ****************************
 	return (
-		<View style={[styles.container, { backgroundColor: backgroundColor }]}>
+		<View style={[styles.container, { backgroundColor: backgroundColor, marginBottom: 10 }]}>
 			{/* <View> */}
 			<GiftedChat
 				messages={messages}
@@ -155,6 +187,10 @@ const Chat = ({ db, route, navigation, isConnected }) => {
 				// renderDay={renderDay}
 				// OverRiding renderInputToolBar prop to remove if no internet connection
 				renderInputToolbar={renderInputToolbar}
+				// Additional actions ("+" circle sign on the left of input field)
+				renderActions={renderCustomActions}
+				// Function that will render MapView
+				renderCustomView={renderCustomView}
 				onSend={(messages) => onSend(messages)}
 				user={{
 					_id: userId,

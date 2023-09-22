@@ -10,7 +10,12 @@ import Chat from './components/Chat';
 
 // Firestore Functions
 import { initializeApp } from 'firebase/app';
+
+// Firestore Database
 import { getFirestore, disableNetwork, enableNetwork } from 'firebase/firestore';
+
+// Firestore storage
+import { getStorage } from 'firebase/storage';
 
 // Prevent warning message: "AsyncStorage has been extracted from" to appear
 import { LogBox } from 'react-native';
@@ -28,7 +33,7 @@ const Stack = createNativeStackNavigator();
 
 const App = () => {
 	// *************************************************************
-	// ********************** F O N T S ****************************
+	// ********************** Custom F O N T S ****************************
 
 	// Setup State variable to check when the Custom Font is loaded
 	// const [fontLoaded, setFontLoaded] = useState(false);
@@ -83,7 +88,10 @@ const App = () => {
 	const app = initializeApp(firebaseConfig);
 
 	// Initialize Cloud Firestore and get a reference to the service
+	// Database
 	const db = getFirestore(app);
+	// Storage
+	const storage = getStorage(app);
 
 	// ***************************************************************
 	// ********************** R E N D E R ****************************
@@ -99,6 +107,7 @@ const App = () => {
 					{(props) => (
 						<Chat
 							db={db}
+							storage={storage}
 							isConnected={connectionStatus.isConnected}
 							{...props}
 						/>
